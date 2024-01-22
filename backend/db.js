@@ -1,10 +1,18 @@
 const mongoose = require('mongoose')
-mongoose.connect("mongodb+srv://nomanmaniyar:fqz61kCMkJbHUgJG@cluster0.mcnsog5.mongodb.net/")
+const connectionUri = process.env.ALTAS_URI || " ";
+
+
+mongoose.connect(connectionUri).catch((error) => { console.log("MONGO CONNECTION ERROR: " + error) });
+mongoose.connection.once('open', () => {
+    console.log('Database connected!')
+})
+
 const userSchema = new mongoose.Schema({
     username: String,
     password: String,
-    first_name: String,
-    last_name: String
+    firstName: String,
+    lastName: String
 })
+
 const User = mongoose.model('User', userSchema);
 module.exports = { User };

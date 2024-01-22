@@ -5,7 +5,9 @@ const { JWT_SECRET } = require('../config')
 const jwt = require('jsonwebtoken')
 const { User } = require('../db')
 
-
+router.get('/test', (req, res) => {
+    res.send("API RUNNING...")
+});
 
 const signupBody = zod.object({
     username: zod.string().email(),
@@ -14,19 +16,16 @@ const signupBody = zod.object({
     password: zod.string()
 })
 
-router.post("/signup", async (res, req) => {
-    const { sucess } = signupBody.safeParse(req.body);
-    if (!sucess) {
-        return res.stats(411).json({
-            message: "Email already Taken / Invalid Input"
-        })
+router.post("/signup", async (req, res) => {
+    const { success } = await signupBody.safeParseAsync(req.body);
+
+    if (!success) {
+        return res.status(411).json({ "message": "Sucess NOT Email already Taken / Invalid Input" });
     }
-
-    const existingUser = await user.findOne({ username: req.body.username });
-
-    if (!existingUser) {
-        return res.stats(411).json({
-            message: "Email already Taken / Invalid Input"
+    const existingUser = await User.findOne({ username: req.body.username });
+    if (existingUser != null) {
+        return res.status(411).json({
+            "message": " existingUser Email already Taken / Invalid Input"
         })
     }
     const user = await User.create({
@@ -35,13 +34,11 @@ router.post("/signup", async (res, req) => {
         firstName: req.body.firstName,
         lastName: req.body.lastName,
     })
-
     const userId = user._id;
     const token = jwt.sign({
         userId
     }, JWT_SECRET)
-
-    res.json({ message: "User Created Sucessfully", token: token });
+    return res.json({ "message": "User Created Sucessfully", token: token });
 })
 
 
@@ -52,8 +49,8 @@ const signInBody = zod.object({
 })
 
 router.post("/signin", (req, res) => {
-    const { sucess } = signInBody.safeParse(req.body)
-    if (!sucess) {
+    const { success } = signInBody.safeParse(req.body)
+    if (!success) {
         return res.status(411).json({
             message: "Email already taken/ Inavlid Input"
         });
